@@ -414,28 +414,45 @@ namespace DiscordNet.Modules
         }
 
         [Command("sheep")]
-        public async Task SheepmodeUser(string userMention)
+        public async Task SheepmodeUser(IGuildUser target)
         {
             ulong contributorsLoungeId = 878992667101503498;
             ulong contributorsVCTextId = 898571566563065866;
             if (!(Context.Channel.Id == contributorsLoungeId || Context.Channel.Id == contributorsVCTextId))
                 return;
 
-            MentionUtils.TryParseUser(userMention, out ulong userId);
-            if(userId != 0 && Context.User.Id != StaticGlobals.sheepedUserId && Context.User.Id != userId)
+            if (target == null)
+                return;
+
+            if (!target.RoleIds.Any(x => x == 898731376214429716))
             {
-                if (userId != StaticGlobals.sheepedUserId)
-                {
-                    StaticGlobals.sheepedUserId = userId;
-                    await Context.Message.AddReactionAsync(new Emoji("🐑"));
-                }
-                else if (userId == StaticGlobals.sheepedUserId)
-                {
-                    StaticGlobals.sheepedUserId = 0;
-                    await Context.Message.AddReactionAsync(new Emoji("🍃"));
-                }
+                await target.AddRoleAsync(898731376214429716);
+                await Context.Message.AddReactionAsync(new Emoji("🐑"));
+            }
+            else
+            {
+                await target.RemoveRoleAsync(898731376214429716);
+                await Context.Message.AddReactionAsync(new Emoji("🍃"));
             }
 
+        }
+
+        [Command("readonly"), Alias("ro")]
+        public async Task ReadOnly(IGuildUser target)
+        {
+            if (target == null)
+                return;
+
+            if (Context.User is not SocketGuildUser user)
+                return;
+
+            if (!user.Roles.Any(x => x.Id == 601841757642031141))
+                return;
+
+            if (target.RoleIds.Contains(890605030686728243ul))
+                await target.RemoveRoleAsync(890605030686728243);
+            else
+                await target.AddRoleAsync(890605030686728243);
         }
     }
 
