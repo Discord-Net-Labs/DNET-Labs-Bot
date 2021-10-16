@@ -418,16 +418,22 @@ namespace DiscordNet.Modules
         {
             ulong contributorsLoungeId = 878992667101503498;
             ulong contributorsVCTextId = 898571566563065866;
-            if (Context.Channel.Id != contributorsLoungeId || Context.Channel.Id != contributorsVCTextId)
+            if (!(Context.Channel.Id == contributorsLoungeId || Context.Channel.Id == contributorsVCTextId))
                 return;
 
             MentionUtils.TryParseUser(userMention, out ulong userId);
             if(userId != 0 && Context.User.Id != StaticGlobals.sheepedUserId && Context.User.Id != userId)
             {
                 if (userId != StaticGlobals.sheepedUserId)
+                {
                     StaticGlobals.sheepedUserId = userId;
-                if (userId == StaticGlobals.sheepedUserId)
+                    await Context.Message.AddReactionAsync(new Emoji("🐑"));
+                }
+                else if (userId == StaticGlobals.sheepedUserId)
+                {
                     StaticGlobals.sheepedUserId = 0;
+                    await Context.Message.AddReactionAsync(new Emoji("🍃"));
+                }
             }
 
         }

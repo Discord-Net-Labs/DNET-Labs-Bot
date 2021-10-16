@@ -36,12 +36,11 @@ namespace DiscordNet
 
         public async Task HandleSheepMessage(SocketUserMessage msg)
         {
-            string msgContent = msg.Content;
             Random r = new Random();
-            string[] replies = new string[] { "Bah", "Baaaah", "Baaaaaaah!", "BAAAAH!" };
+            var rng = r.Next(0, 20);
+            string reply = $"B{"a".PadRight(rng, 'a')}h{((rng / 2 - 7) % 2 == 0 ? "!" : ".")}";
             await msg.DeleteAsync();
-            int index = r.Next(replies.Length);
-            await msg.Channel.SendMessageAsync($"{replies[index]}");
+            await msg.Channel.SendMessageAsync($"{(rng % 2 == 0 ? reply.ToUpper() : reply)}");
         }
     }
 }
