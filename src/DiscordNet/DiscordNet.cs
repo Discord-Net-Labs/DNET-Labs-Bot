@@ -94,6 +94,7 @@ namespace DiscordNet
 
             await _client.LoginAsync(TokenType.Bot, discordToken);
             await _client.StartAsync();
+            await _client.SetGameAsync("with new labs features!");
             await Task.Delay(-1);
         }
     }
