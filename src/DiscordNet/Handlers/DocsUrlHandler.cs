@@ -4,7 +4,7 @@ namespace DiscordNet
 {
     public class DocsUrlHandler
     {
-        public static string DocsBaseUrl { get; set; } = "https://discord-net-labs.com/";
+        public static string DocsBaseUrl { get; set; } = "https://discordnet.dev/";
 
         private string[] _docsUrls =
         {

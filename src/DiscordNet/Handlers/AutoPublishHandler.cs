@@ -14,10 +14,11 @@ namespace DiscordNet
     {
         public static ulong[] AutoPublishChannels = new ulong[]
         {
-            848177635002941491
+            848177635002941491,
+            918142959491383296
         };
 
-        private ConcurrentQueue<SocketUserMessage> _queue = new ConcurrentQueue<SocketUserMessage>();
+        private ConcurrentQueue<IUserMessage> _queue = new ConcurrentQueue<IUserMessage>();
         private TaskCompletionSource _queueSignal = new TaskCompletionSource();
         DiscordSocketClient _client;
         public async Task InitializeAsync(MainController MainHandler, IServiceProvider services)
@@ -30,15 +31,16 @@ namespace DiscordNet
 
             foreach(var id in AutoPublishChannels)
             {
-                var channel = _client.GetGuild(848176216011046962).GetTextChannel(id);
+                var guild = _client.GetGuild(848176216011046962);
+                var channel = guild.GetTextChannel(id); ;
 
                 var msgs = await channel.GetMessagesAsync(25).FlattenAsync();
 
-                var unposted = msgs.Where(x => (x.Flags & MessageFlags.Crossposted) != 0);
+                var unposted = msgs.Where(x => (x.Flags & MessageFlags.Crossposted) == 0);
 
                 if (unposted.Any())
                     foreach (var msg in unposted)
-                        if(msg is SocketUserMessage sum)
+                        if(msg is IUserMessage sum)
                             _queue.Enqueue(sum);
             }
 
@@ -58,7 +60,11 @@ namespace DiscordNet
                 return;
 
             _queue.Enqueue(userMsg);
-            _queueSignal?.SetResult();
+            try
+            {
+                _queueSignal?.SetResult();
+            }
+            catch { }
         }
 
         private async Task RunQueue()
@@ -69,7 +75,11 @@ namespace DiscordNet
 
                 while(_queue.TryDequeue(out var msg))
                 {
-                    await msg.CrosspostAsync();
+                    try
+                    {
+                        await msg.CrosspostAsync();
+                    }
+                    catch { }
                 }
 
                 _queueSignal = new TaskCompletionSource();

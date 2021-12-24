@@ -25,13 +25,19 @@ namespace DiscordNet
             SheepHandler = new SheepHandler();
             QueryHandler = new QueryHandler((GithubRest)services.GetService(typeof(GithubRest)));
             PublishHandler = new AutoPublishHandler();
+
+            client.Ready += Client_Ready;
+        }
+
+        private async Task Client_Ready()
+        {
+            await PublishHandler.InitializeAsync(this, Services);
         }
 
         public async Task InitializeEarlyAsync()
         {
             await CommandHandler.InitializeAsync(this, Services);
             await SheepHandler.InitializeAsync(this, Services);
-            await PublishHandler.InitializeAsync(this, Services);
             QueryHandler.Initialize();
         }
     }
