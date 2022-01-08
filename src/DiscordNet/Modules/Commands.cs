@@ -325,7 +325,7 @@ namespace DiscordNet.Modules
             {
                 x.IsInline = false;
                 x.Name = "Info";
-                x.Value = $"- Library: Discord.Net ({DiscordConfig.Version})\n" +
+                x.Value = $"- Library: Discord.Net Labs ({DiscordConfig.Version})\n" +
                           $"- Runtime: {RuntimeInformation.FrameworkDescription} {RuntimeInformation.ProcessArchitecture}\n" +
                           $"- Source: https://github.com/SubZero0/DiscordNet-Docs\n" +
                           $"- Uptime: {(DateTime.Now - Process.GetCurrentProcess().StartTime).ToString(@"dd\.hh\:mm\:ss")}";

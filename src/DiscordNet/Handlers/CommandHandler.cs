@@ -1,5 +1,6 @@
 ﻿using Discord;
 using Discord.Commands;
+using Discord.Interactions;
 using Discord.WebSocket;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.DependencyInjection;
@@ -14,6 +15,7 @@ namespace DiscordNet
     public class CommandHandler
     {
         private CommandService _commandService;
+        private InteractionService _interactionService;
         private DiscordSocketClient _client;
         private IServiceProvider _services;
         private MainController _mainHandler;
@@ -24,13 +26,27 @@ namespace DiscordNet
             _mainHandler = MainHandler;
             _client = services.GetService<DiscordSocketClient>();
             _commandService = new CommandService();
+            _interactionService = new InteractionService(_client);
             _services = services;
 
             await _commandService.AddModulesAsync(Assembly.GetEntryAssembly(), _services);
+            await _interactionService.AddModulesAsync(Assembly.GetEntryAssembly(), _services);
+
             _commandService.Log += Log;
+            _interactionService.Log += Log;
 
             _client.MessageReceived += HandleCommand;
             _client.MessageUpdated += HandleUpdate;
+
+            _client.Ready += async () =>
+            {
+                await _interactionService.RegisterCommandsToGuildAsync(848176216011046962).ConfigureAwait(false);
+            };
+
+            _client.InteractionCreated += async (intr) =>
+            {
+                await _interactionService.ExecuteCommandAsync(new SocketInteractionContext(_client, intr), _services);
+            };
         }
 
         private Task Log(LogMessage msg)
@@ -143,12 +159,12 @@ namespace DiscordNet
             StringBuilder sb = new StringBuilder();
             if (command == null)
             {
-                foreach (ModuleInfo mi in _commandService.Modules.OrderBy(x => x.Name))
+                foreach (Discord.Commands.ModuleInfo mi in _commandService.Modules.OrderBy(x => x.Name))
                     if (!mi.IsSubmodule)
                         if (mi.Name != "Help")
                         {
                             bool ok = true;
-                            foreach (PreconditionAttribute precondition in mi.Preconditions)
+                            foreach (Discord.Commands.PreconditionAttribute precondition in mi.Preconditions)
                                 if (!(await precondition.CheckPermissionsAsync(context, null, _services)).IsSuccess)
                                 {
                                     ok = false;
@@ -161,13 +177,13 @@ namespace DiscordNet
                                 for (int i = cmds.Count - 1; i >= 0; i--)
                                 {
                                     object o = cmds[i];
-                                    foreach (PreconditionAttribute precondition in ((o as CommandInfo)?.Preconditions ?? (o as ModuleInfo)?.Preconditions))
+                                    foreach (Discord.Commands.PreconditionAttribute precondition in ((o as CommandInfo)?.Preconditions ?? (o as Discord.Commands.ModuleInfo)?.Preconditions))
                                         if (!(await precondition.CheckPermissionsAsync(context, o as CommandInfo, _services)).IsSuccess)
                                             cmds.Remove(o);
                                 }
                                 if (cmds.Count != 0)
                                 {
-                                    var list = cmds.Select(x => $"{((x as CommandInfo)?.Name ?? (x as ModuleInfo)?.Name)}").OrderBy(x => x);
+                                    var list = cmds.Select(x => $"{((x as CommandInfo)?.Name ?? (x as Discord.Commands.ModuleInfo)?.Name)}").OrderBy(x => x);
                                     sb.AppendLine($"**{mi.Name}:** {string.Join(", ", list)}");
                                 }
                             }

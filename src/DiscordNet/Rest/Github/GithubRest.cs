@@ -1,6 +1,7 @@
 ﻿using DiscordNet.Query;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
@@ -23,7 +24,7 @@ namespace DiscordNet.Github
             _authorizationHeader = token;
         }
 
-        private async Task<JObject> SendJsonRequestAsync(HttpMethod method, string endpoint, string extra = null)
+        private async Task<JToken> SendJsonRequestAsync(HttpMethod method, string endpoint, string extra = null)
         {
             using (var http = new HttpClient())
             {
@@ -33,7 +34,17 @@ namespace DiscordNet.Github
                 request.Headers.Add("Authorization", _authorizationHeader);
                 var response = await http.SendAsync(request);
                 if (response.IsSuccessStatusCode)
-                    return JObject.Parse(await response.Content.ReadAsStringAsync());
+                {
+                    var content = await response.Content.ReadAsStringAsync();
+                    try
+                    {
+                        return JObject.Parse(content);
+                    }
+                    catch
+                    {
+                        return JArray.Parse(content);
+                    }
+                }
                 throw new Exception($"{response.ReasonPhrase}: {await response.Content.ReadAsStringAsync()}");
             }
         }
@@ -72,8 +83,47 @@ namespace DiscordNet.Github
             }
         }
 
+        public async Task<List<Label>> GetLabelsAsync(string repo)
+        {
+            var result = await SendJsonRequestAsync(HttpMethod.Get, $"/repos/{repo}/labels");
+            return result.ToObject<List<Label>>();
+        }
+
+        public async Task<FullPullRequest> GetRawPullRequestAsync(string repo, int number)
+        {
+            var result = await SendJsonRequestAsync(HttpMethod.Get, $"/repos/{repo}/pulls/", $"{number}");
+
+            return result.ToObject<FullPullRequest>();
+        }
+
         public Task<Stream> GetRepositoryDownloadStreamAsync(PullRequest pullRequest)
             => SendRequestAsync(HttpMethod.Get, $"/repos/{pullRequest.Repository}/zipball/", pullRequest.Ref);
+
+        public async Task<List<IssueSearchResultItem>> SearchRawAsync(string searchType, string query)
+        {
+            var result = await SendJsonRequestAsync(HttpMethod.Get, $"/search/{searchType}", $"?q={query}" + "&per_page=100");
+            var items = (JArray)result["items"];
+
+            List<IssueSearchResultItem> list = new List<IssueSearchResultItem>();
+
+            foreach (var item in items)
+                list.Add(item.ToObject<IssueSearchResultItem>());
+
+            int totalCount = (int)result["total_count"];
+
+            if (totalCount > 100)
+            {
+                int pages = (int)Math.Floor(totalCount / 100f);
+                for (int i = 2; i <= pages + 1; i++)
+                {
+                    result = await SendJsonRequestAsync(HttpMethod.Get, $"/search/{searchType}", $"?q={query}" + $"&per_page=100&page={i}");
+                    items = (JArray)result["items"];
+                    foreach (var item in items)
+                        list.Add(item.ToObject<IssueSearchResultItem>());
+                }
+            }
+            return list;
+        }
 
         public async Task<List<GitSearchResult>> SearchAsync(string search, string filename = null)
         {
