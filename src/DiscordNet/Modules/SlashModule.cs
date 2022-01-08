@@ -53,7 +53,7 @@ namespace Bot.Modules
 
                 string FormulateUrl(IssueSearchResultItem item)
                 {
-                    string postfix = item.PullRequest == null ? "issue" : "pull";
+                    string postfix = item.PullRequest == null ? "issues" : "pull";
 
                     return $"https://github.com/Discord-Net-Labs/Discord.Net-Labs/{postfix}/{item.Number}";
                 }
