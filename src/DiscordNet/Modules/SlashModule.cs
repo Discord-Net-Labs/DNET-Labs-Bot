@@ -23,11 +23,11 @@ namespace Bot.Modules
                 IssuePrType type,
 
                 [Summary("query", "The query for the item to search")]
-                [Autocomplete(typeof(MainSearchAutocompleter))]
+                [Autocomplete(typeof(LabsSearchAutocompleter))]
                 string prNumberRaw = null,
 
                 [Summary("label", "The label attached to the pr/issue")]
-                [Autocomplete(typeof(MainLabelAutocompleter))]
+                [Autocomplete(typeof(LabsLabelAutocompleter))]
                 string label = null,
 
                 [Summary("open", "Whether or not the issue/pr is open.")]
@@ -148,7 +148,7 @@ namespace Bot.Modules
 
                 string FormulateUrl(IssueSearchResultItem item)
                 {
-                    string postfix = item.PullRequest == null ? "issue" : "pull";
+                    string postfix = item.PullRequest == null ? "issues" : "pull";
 
                     return $"https://github.com/discord-net/Discord.Net/{postfix}/{item.Number}";
                 }
