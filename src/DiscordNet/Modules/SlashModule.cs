@@ -81,7 +81,7 @@ namespace Bot.Modules
                 }
                 else
                 {
-                    var result = await GithubRest.GetRawPullRequestAsync("Discord-Net-Labs/Discord.Net-Labs", prNumber);
+                    IssuePR result = (IssuePR)(await GithubRest.GetRawPullRequestAsync("Discord-Net-Labs/Discord.Net-Labs", prNumber)) ?? await GithubRest.GetRawIssueAsync("Discord-Net-Labs/Discord.Net-Labs", prNumber);
 
                     if (result == null)
                     {
@@ -95,7 +95,8 @@ namespace Bot.Modules
                         .WithColor(Color.Green)
                         .AddField("Author", result.User.Login)
                         .AddField("Link", result.HtmlUrl)
-                        .AddField("State", result.State);
+                        .AddField("State", result.State)
+                        .AddField("Type", result.IsPullRequest ? "Pull request" : "Issue");
 
                     if (result.Labels?.Any() ?? false)
                     {
@@ -176,7 +177,7 @@ namespace Bot.Modules
                 }
                 else
                 {
-                    var result = await GithubRest.GetRawPullRequestAsync("discord-net/Discord.Net", prNumber);
+                    IssuePR result = (IssuePR)(await GithubRest.GetRawPullRequestAsync("discord-net/Discord.Net", prNumber)) ?? await GithubRest.GetRawIssueAsync("discord-net/Discord.Net", prNumber);
 
                     if(result == null)
                     {
@@ -190,7 +191,8 @@ namespace Bot.Modules
                         .WithColor(Color.Green)
                         .AddField("Author", result.User.Login)
                         .AddField("Link", result.HtmlUrl)
-                        .AddField("State", result.State);
+                        .AddField("State", result.State)
+                        .AddField("Type", result.IsPullRequest ? "Pull request" : "Issue");
 
                     if(result.Labels?.Any() ?? false)
                     {

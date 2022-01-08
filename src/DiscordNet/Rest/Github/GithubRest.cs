@@ -91,9 +91,24 @@ namespace DiscordNet.Github
 
         public async Task<FullPullRequest> GetRawPullRequestAsync(string repo, int number)
         {
-            var result = await SendJsonRequestAsync(HttpMethod.Get, $"/repos/{repo}/pulls/", $"{number}");
+            try
+            {
+                var result = await SendJsonRequestAsync(HttpMethod.Get, $"/repos/{repo}/pulls/", $"{number}");
 
-            return result.ToObject<FullPullRequest>();
+                return result.ToObject<FullPullRequest>();
+            }
+            catch { return null; }
+        }
+
+        public async Task<FullIssue> GetRawIssueAsync(string repo, int number)
+        {
+            try
+            {
+                var result = await SendJsonRequestAsync(HttpMethod.Get, $"/repos/{repo}/issues/", $"{number}");
+
+                return result.ToObject<FullIssue>();
+            }
+            catch { return null; }
         }
 
         public Task<Stream> GetRepositoryDownloadStreamAsync(PullRequest pullRequest)

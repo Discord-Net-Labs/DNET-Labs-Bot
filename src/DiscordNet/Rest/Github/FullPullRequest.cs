@@ -7,8 +7,10 @@
     using Newtonsoft.Json;
     using Newtonsoft.Json.Converters;
 
-    public partial class FullPullRequest
+    public partial class FullPullRequest : IssuePR
     {
+        public bool IsPullRequest => true;
+
         [JsonProperty("url")]
         public Uri Url { get; set; }
 

@@ -58,7 +58,7 @@ namespace Bot.Modules.AutoCompleters
             if (query == null)
                 return _labels.OrderBy(x => x);
 
-            return _labels.OrderByDescending(x => Levenshtein.Compute(x, query));
+            return _labels.OrderBy(x => Levenshtein.Compute(x, query));
         }
     }
 }
