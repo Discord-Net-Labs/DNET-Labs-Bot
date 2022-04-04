@@ -28,7 +28,7 @@ namespace DiscordNet
             _client = new DiscordSocketClient(new DiscordSocketConfig()
             {
                 LogLevel = LogSeverity.Debug,
-                GatewayIntents = GatewayIntents.All
+                GatewayIntents = GatewayIntents.AllUnprivileged | GatewayIntents.GuildMembers
             });
 
             _client.Log += (message) =>
